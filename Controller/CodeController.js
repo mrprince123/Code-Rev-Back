@@ -6,12 +6,12 @@ const Likes = require("../Model/likeModel");
 // Create New Code
 const createCode = async (req, res) => {
   const { userId } = req.user;
-  const { title, description, code, language, tags, status, visibility } =
+  const { title, description, code, language, tags, visibility } =
     req.body;
 
   try {
     // Basic Validations
-    if (!title || !description || !code || !tags || !status || !visibility) {
+    if (!title || !description || !code || !tags || !visibility) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required!" });
@@ -23,7 +23,6 @@ const createCode = async (req, res) => {
       code,
       language,
       tags,
-      status,
       visibility,
       authorId: userId,
     });
