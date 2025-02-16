@@ -115,13 +115,13 @@ const login = async (req, res) => {
 // Logout User
 const logout = async (req, res) => {
   try {
-    console.log("refreshToken");
     return res
       .status(200)
       .clearCookie("refreshToken", {
-        httpOnly: false,
+        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "None",
+        path: "/",
       })
       .json({
         success: true,

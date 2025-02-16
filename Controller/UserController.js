@@ -1,7 +1,23 @@
+const multer = require("multer");
 const Code = require("../Model/codeModel");
 const Likes = require("../Model/likeModel");
 const Reviewer = require("../Model/reviewModel");
 const User = require("../Model/userModel");
+const path = require("path");
+const util = require("util");
+
+// Configure Multer (for file Upload)
+const storage = multer.diskStorage({
+  destination: "./uploads/",
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.filename + "-" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+
+const upload = multer({ storage });
 
 // Get all Users
 const getAllUsers = async (req, res) => {
@@ -51,7 +67,7 @@ const getUserById = async (req, res) => {
     }
 
     return res.status(200).json({
-      success: false,
+      success: true,
       message: "User Fetched Successfully",
       data: user,
     });
@@ -65,11 +81,24 @@ const getUserById = async (req, res) => {
   }
 };
 
+const uploadSingle = util.promisify(upload.single("profilePicture"));
+
 // Update User By Id
 const updateUserById = async (req, res) => {
   try {
+    await uploadSingle(req, res);
+
     const { userId } = req.user;
-    const updateUser = req.body;
+    let updateUser = { ...req.body };
+
+    // Prevent updating restricted fields
+    const restrictedFields = ["_id", "password"];
+    restrictedFields.forEach((field) => delete updateUser[field]);
+
+    // If an image was uploaded, update the profileImage field
+    if (req.file) {
+      updateUser.profilePicture = `/uploads/${req.file.filename}`;
+    }
 
     const user = await User.findByIdAndUpdate(
       userId,

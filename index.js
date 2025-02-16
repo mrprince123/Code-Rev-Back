@@ -5,6 +5,7 @@ const connectDatabase = require("./Database/db");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const app = express();
+const path = require("path");
 
 // All Server Config
 app.use(bodyParser.json());
@@ -27,6 +28,9 @@ connectDatabase();
 app.get("/", (req, res) => {
   res.send("Hello World!!");
 });
+
+// Serve static files from the "uploads" directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mention All Routes
 app.use("/api/v1/auth", require("./Routes/AuthRoute")); // Done
