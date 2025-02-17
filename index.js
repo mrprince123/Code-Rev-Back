@@ -14,7 +14,7 @@ app.use(cookieParser());
 
 // Allow specific domain(s)
 const corsOptions = {
-  origin: ["http://localhost:3000"], // Replace with your front-end URL
+  origin: ["https://coderev.princesahni.com"], // Replace with your front-end URL
   methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
