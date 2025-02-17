@@ -23,7 +23,7 @@ const userSchema = mongoose.Schema(
       type: String,
       required: false,
       default:
-        "https://giftolexia.com/wp-content/uploads/2015/11/dummy-profile.png",
+        "/uploads/undefined-1739715815818.png",
     },
     role: {
       type: String,
