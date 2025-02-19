@@ -94,6 +94,10 @@ const codeSchema = mongoose.Schema(
       required: true,
       ref: "User",
     },
+    aiResponse : {
+      type: String,
+      required: true,
+    }
   },
   {
     timestamps: true,

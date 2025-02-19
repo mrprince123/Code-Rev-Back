@@ -2,12 +2,28 @@ const { populate } = require("dotenv");
 const Code = require("../Model/codeModel");
 const Reviewer = require("../Model/reviewModel");
 const Likes = require("../Model/likeModel");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// AI Config
+const apiKey = process.env.CHAT_API;
+const genAI = new GoogleGenerativeAI(apiKey);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+});
+
+const generationConfig = {
+  temperature: 1,
+  topP: 0.95,
+  topK: 40,
+  maxOutputTokens: 8192,
+  responseMimeType: "text/plain",
+};
 
 // Create New Code
 const createCode = async (req, res) => {
   const { userId } = req.user;
-  const { title, description, code, language, tags, visibility } =
-    req.body;
+  const { title, description, code, language, tags, visibility } = req.body;
 
   try {
     // Basic Validations
@@ -17,6 +33,45 @@ const createCode = async (req, res) => {
         .json({ success: false, message: "All fields are required!" });
     }
 
+    // Start a new Session with Gemini
+    const codeReview = model.startChat({
+      generationConfig,
+      history: [],
+    });
+
+    // const result = await codeReview.sendMessage(
+    //   "You are a Code Reviewer and this is my description, and accurate at the point " +
+    //     description +
+    //     "Code Language is " +
+    //     language +
+    //     " Analise my description and review code accordingly " +
+    //     code
+    // );
+
+
+    const result = await codeReview.sendMessage(
+      `You are an expert Code Reviewer. Analyze the following details carefully and provide a detailed review:
+    
+      - **Description:** ${description}  
+      - **Code Language:** ${language}  
+      - **Code:**  
+      \`\`\`${language}
+      ${code}
+      \`\`\`
+    
+      Provide a structured review, including:
+      1. Code correctness  
+      2. Best practices  
+      3. Performance optimizations  
+      4. Potential improvements  
+      5. Security concerns (if any)  
+    
+      Ensure your feedback is **accurate, constructive, and actionable**.`
+    );
+    
+
+    const aiResponse = result.response.text();
+
     const newCode = await Code.create({
       title,
       description,
@@ -25,6 +80,7 @@ const createCode = async (req, res) => {
       tags,
       visibility,
       authorId: userId,
+      aiResponse,
     });
 
     return res.status(201).json({
