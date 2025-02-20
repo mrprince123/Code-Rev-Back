@@ -23,7 +23,7 @@ const userSchema = mongoose.Schema(
       type: String,
       required: false,
       default:
-        "/uploads/undefined-1739715815818.png",
+        "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg",
     },
     role: {
       type: String,

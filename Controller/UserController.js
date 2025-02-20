@@ -108,7 +108,7 @@ const updateUserById = async (req, res) => {
       });
     }
 
-    console.log("User Uploaded", user);
+    
     return res.status(200).json({
       success: true,
       data: user,
