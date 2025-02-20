@@ -9,7 +9,7 @@ const apiKey = process.env.CHAT_API;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-2.0-flash-lite-preview-02-05",
 });
 
 const generationConfig = {
@@ -39,36 +39,36 @@ const createCode = async (req, res) => {
       history: [],
     });
 
-    // const result = await codeReview.sendMessage(
-    //   "You are a Code Reviewer and this is my description, and accurate at the point " +
-    //     description +
-    //     "Code Language is " +
-    //     language +
-    //     " Analise my description and review code accordingly " +
-    //     code
-    // );
-
-
     const result = await codeReview.sendMessage(
-      `You are an expert Code Reviewer. Analyze the following details carefully and provide a detailed review:
+      `### 📌 **Code Review Request**  
     
-      - **Description:** ${description}  
-      - **Code Language:** ${language}  
-      - **Code:**  
-      \`\`\`${language}
-      ${code}
-      \`\`\`
+      🔹 **Description:**  
+      ${description}  
     
-      Provide a structured review, including:
-      1. Code correctness  
-      2. Best practices  
-      3. Performance optimizations  
-      4. Potential improvements  
-      5. Security concerns (if any)  
+      🔹 **Code Language:** \`${language}\`  
     
-      Ensure your feedback is **accurate, constructive, and actionable**.`
+      🔹 **Tags:** ${tags}  
+    
+      ---  
+      ### 📝 **Submitted Code:**  
+      \`\`\`${language}  
+      ${code}  
+      \`\`\`  
+      ---  
+    
+      ### ✅ **Review Guidelines:**  
+      Please provide a structured review covering the following aspects:  
+    
+      1. **🟢 Code Correctness** – Identify syntax errors, logical mistakes, or potential issues.  
+      2. **📌 Best Practices** – Suggest improvements based on industry standards and clean code principles.  
+      3. **🚀 Performance Optimizations** – Recommend ways to enhance efficiency and speed.  
+      4. **🔧 Potential Improvements** – Highlight areas for refactoring or enhanced readability.  
+      5. **🛡️ Security Concerns** – Detect vulnerabilities and suggest fixes if applicable.  
+    
+      ---  
+      📢 **Format the response using Markdown with proper spacing, bullet points, and code highlights for better readability.**  
+      `
     );
-    
 
     const aiResponse = result.response.text();
 
