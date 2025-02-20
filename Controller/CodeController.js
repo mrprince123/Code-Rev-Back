@@ -9,7 +9,7 @@ const apiKey = process.env.CHAT_API;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-lite-preview-02-05",
+  model: "gemini-1.5-flash",
 });
 
 const generationConfig = {
@@ -40,34 +40,31 @@ const createCode = async (req, res) => {
     });
 
     const result = await codeReview.sendMessage(
-      `### 📌 **Code Review Request**  
-    
-      🔹 **Description:**  
-      ${description}  
-    
-      🔹 **Code Language:** \`${language}\`  
-    
-      🔹 **Tags:** ${tags}  
-    
-      ---  
-      ### 📝 **Submitted Code:**  
-      \`\`\`${language}  
-      ${code}  
-      \`\`\`  
-      ---  
-    
-      ### ✅ **Review Guidelines:**  
-      Please provide a structured review covering the following aspects:  
-    
-      1. **🟢 Code Correctness** – Identify syntax errors, logical mistakes, or potential issues.  
-      2. **📌 Best Practices** – Suggest improvements based on industry standards and clean code principles.  
-      3. **🚀 Performance Optimizations** – Recommend ways to enhance efficiency and speed.  
-      4. **🔧 Potential Improvements** – Highlight areas for refactoring or enhanced readability.  
-      5. **🛡️ Security Concerns** – Detect vulnerabilities and suggest fixes if applicable.  
-    
-      ---  
-      📢 **Format the response using Markdown with proper spacing, bullet points, and code highlights for better readability.**  
-      `
+      `**Code Review Request**  
+      **Description:** ${description}  
+      **Language:** \`${language}\` | **Tags:** ${tags}
+      
+      **Code:**
+      \`\`\`${language}
+      ${code}
+      \`\`\`
+      
+      **Review Requirements:**
+      1. **Code Correctness** - Identify critical errors first
+      2. **Best Practices** - Suggest clean code improvements
+      3. **Performance** - Highlight optimization opportunities 
+      4. **Readability** - Suggest refactoring needs
+      5. **Security** - Flag vulnerabilities
+      
+      **Response Format:**
+      - Use ## headers for each section
+      - Keep bullet points concise (max 5 per section)
+      - Prioritize critical issues first
+      - Use code blocks for examples
+      - Avoid verbose explanations
+      - Maintain consistent spacing between sections
+      
+      Return formatted markdown with bold section headers and proper code highlighting.`
     );
 
     const aiResponse = result.response.text();

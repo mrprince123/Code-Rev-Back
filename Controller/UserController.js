@@ -1,23 +1,8 @@
-const multer = require("multer");
 const Code = require("../Model/codeModel");
 const Likes = require("../Model/likeModel");
 const Reviewer = require("../Model/reviewModel");
 const User = require("../Model/userModel");
-const path = require("path");
-const util = require("util");
-
-// Configure Multer (for file Upload)
-const storage = multer.diskStorage({
-  destination: "./uploads/",
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      file.filename + "-" + Date.now() + path.extname(file.originalname)
-    );
-  },
-});
-
-const upload = multer({ storage });
+const { cloudinary_js_config } = require("../Middleware/cloudinaryConfig");
 
 // Get all Users
 const getAllUsers = async (req, res) => {
@@ -81,13 +66,9 @@ const getUserById = async (req, res) => {
   }
 };
 
-const uploadSingle = util.promisify(upload.single("profilePicture"));
-
 // Update User By Id
 const updateUserById = async (req, res) => {
   try {
-    await uploadSingle(req, res);
-
     const { userId } = req.user;
     let updateUser = { ...req.body };
 
@@ -97,7 +78,21 @@ const updateUserById = async (req, res) => {
 
     // If an image was uploaded, update the profileImage field
     if (req.file) {
-      updateUser.profilePicture = `/uploads/${req.file.filename}`;
+      const uploadToCloudinary = () => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary_js_config.uploader.upload_stream(
+            { folder: "profilePicture" },
+            (error, uploadedImage) => {
+              if (error) reject(error);
+              else resolve(uploadedImage.secure_url);
+            }
+          );
+          stream.end(req.file.buffer);
+        });
+      };
+
+      imageUrl = await uploadToCloudinary(); // Wait for Cloudinary upload
+      updateUser.profilePicture = imageUrl; // Update profilePicture field
     }
 
     const user = await User.findByIdAndUpdate(
@@ -113,6 +108,7 @@ const updateUserById = async (req, res) => {
       });
     }
 
+    console.log("User Uploaded", user);
     return res.status(200).json({
       success: true,
       data: user,

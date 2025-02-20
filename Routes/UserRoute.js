@@ -6,11 +6,20 @@ const {
   getAllUsers,
 } = require("../Controller/UserController");
 const verifyToken = require("../Middleware/sendToken");
+const multer = require("multer");
 const router = express.Router();
 
-router.get("/all",  getAllUsers);
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+router.get("/all", getAllUsers);
 router.get("/get", verifyToken, getUserById);
 router.delete("/delete", verifyToken, deleteUserById);
-router.put("/update", verifyToken, updateUserById);
+router.put(
+  "/update",
+  verifyToken,
+  upload.single("profilePicture"),
+  updateUserById
+);
 
 module.exports = router;
