@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { default: slugify } = require("slugify");
 
 const codeSchema = mongoose.Schema(
   {
@@ -6,13 +7,17 @@ const codeSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    slug: {
+      type: String,
+      unique: true,
+    },
     description: {
       type: String,
       required: true,
     },
     code: {
       type: String,
-      
+
       required: true,
     },
     language: {
@@ -32,7 +37,7 @@ const codeSchema = mongoose.Schema(
         "XML",
         "HTML",
         "CSS",
-      ],      
+      ],
       required: false,
     },
     tags: [
@@ -94,15 +99,23 @@ const codeSchema = mongoose.Schema(
       required: true,
       ref: "User",
     },
-    aiResponse : {
+    aiResponse: {
       type: String,
       required: true,
-    }
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Middleware to generate slug before saving
+codeSchema.pre("save", function (next) {
+  if (this.isModified("title")) {
+    this.slug = slugify(this.title, { lower: true, strict: true });
+  }
+  next();
+});
 
 const Code = mongoose.model("Code", codeSchema);
 module.exports = Code;

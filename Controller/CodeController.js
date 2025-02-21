@@ -1,8 +1,8 @@
-const { populate } = require("dotenv");
 const Code = require("../Model/codeModel");
 const Reviewer = require("../Model/reviewModel");
 const Likes = require("../Model/likeModel");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { default: slugify } = require("slugify");
 
 // AI Config
 const apiKey = process.env.CHAT_API;
@@ -25,9 +25,11 @@ const createCode = async (req, res) => {
   const { userId } = req.user;
   const { title, description, code, language, tags, visibility } = req.body;
 
+  const slug = slugify(title, { lower: true, strict: true });
+
   try {
     // Basic Validations
-    if (!title || !description || !code || !tags || !visibility) {
+    if (!title || !slug || !description || !code || !tags || !visibility) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required!" });
@@ -67,10 +69,11 @@ const createCode = async (req, res) => {
       Return formatted markdown with bold section headers and proper code highlighting.`
     );
 
-    const aiResponse = result.response.text();
+    const aiResponse = await result.response.text();
 
     const newCode = await Code.create({
       title,
+      slug,
       description,
       code,
       language,
@@ -148,9 +151,9 @@ const getAllCodes = async (req, res) => {
 // Get Specific Code Details of Public
 const getPublicCodeById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
 
-    const code = await Code.findOne({ _id: id })
+    const code = await Code.findOne({ slug: slug })
       .populate({
         path: "authorId",
         model: "User",
@@ -193,7 +196,7 @@ const getPublicCodeById = async (req, res) => {
 const getCodeById = async (req, res) => {
   try {
     const { userId } = req.user;
-    const { id } = req.params;
+    const { slug } = req.params;
 
     if (!userId) {
       return res.status(400).json({
@@ -202,7 +205,7 @@ const getCodeById = async (req, res) => {
       });
     }
 
-    const code = await Code.findOne({ authorId: userId, _id: id })
+    const code = await Code.findOne({ authorId: userId, slug: slug })
       .populate({
         path: "authorId",
         model: "User",
@@ -244,7 +247,7 @@ const getCodeById = async (req, res) => {
 // Update Specific Code
 const updateCodeById = async (req, res) => {
   const { userId } = req.user;
-  const { id } = req.params;
+  const { slug } = req.params;
   const codeUpdate = req.body;
 
   if (!userId) {
@@ -255,7 +258,7 @@ const updateCodeById = async (req, res) => {
   }
 
   try {
-    const code = await Code.findById(id);
+    const code = await Code.findOne({ slug });
 
     if (!code) {
       return res.status(404).json({
@@ -271,10 +274,21 @@ const updateCodeById = async (req, res) => {
       });
     }
 
-    const updatedCode = await Code.findByIdAndUpdate(id, codeUpdate, {
-      new: true,
-      runValidators: true,
-    });
+    if (codeUpdate.title) {
+      codeUpdate.slug = slugify(codeUpdate.title, {
+        lower: true,
+        strict: true,
+      });
+    }
+
+    const updatedCode = await Code.findOneAndUpdate(
+      { slug: slug },
+      codeUpdate,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     return res.status(200).json({
       success: true,
@@ -298,7 +312,7 @@ const deleteCodeById = async (req, res) => {
 
   try {
     const { userId } = req.user;
-    const { id } = req.params;
+    const { slug } = req.params;
 
     if (!userId) {
       return res.status(400).json({
@@ -307,7 +321,7 @@ const deleteCodeById = async (req, res) => {
       });
     }
 
-    const code = await Code.findById(id);
+    const code = await Code.findOne({ slug });
 
     if (!code) {
       return res.status(404).json({
@@ -329,7 +343,7 @@ const deleteCodeById = async (req, res) => {
     // Delete all likes on this Code
     await Likes.deleteMany({ likes: userId });
 
-    await Code.findByIdAndDelete(id);
+    await Code.findOneAndDelete({ slug: slug });
 
     return res.status(200).json({
       success: true,

@@ -14,9 +14,9 @@ const router = express.Router();
 
 router.post("/create", verifyToken, createCode);
 router.get("/all", verifyToken, getAllCodes);
-router.get("/get/public/:id", getPublicCodeById);
-router.get("/get/:id", verifyToken, getCodeById);
-router.put("/update/:id", verifyToken, updateCodeById);
-router.delete("/delete/:id", verifyToken, deleteCodeById);
+router.get("/get/public/:slug", getPublicCodeById);
+router.get("/get/:slug", verifyToken, getCodeById);
+router.put("/update/:slug", verifyToken, updateCodeById);
+router.delete("/delete/:slug", verifyToken, deleteCodeById);
 router.get("/all/public", getAllPublicCodes);
 module.exports = router;
