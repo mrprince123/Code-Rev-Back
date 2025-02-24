@@ -44,6 +44,8 @@ const codeSchema = mongoose.Schema(
       {
         type: String,
         enum: [
+          "web-development",
+          "mobile-development",
           "bugfix",
           "sorting",
           "algorithm",
@@ -71,6 +73,14 @@ const codeSchema = mongoose.Schema(
           "AI",
           "blockchain",
           "networking",
+          "recursion",
+          "dynamic-programming",
+          "greedy",
+          "graph-theory",
+          "bit-manipulation",
+          "string-manipulation",
+          "mathematics",
+          "regex",
         ],
         required: true,
       },
