@@ -51,7 +51,7 @@ setInterval(() => {
     .get("https://coderev.princesahni.com/ping")
     .then(() => console.log("Ping sent to keep server awake"))
     .catch((err) => console.error("Ping failed ", err.message));
-}, 5 * 60 * 1000); 
+}, 5 * 60 * 1000);
 
 // Listen Port
 const port = process.env.PORT || 5000;
