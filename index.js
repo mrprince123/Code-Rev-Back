@@ -44,6 +44,7 @@ app.use("/api/v1/user", require("./Routes/UserRoute")); // Done
 app.use("/api/v1/code", require("./Routes/CodeRoute")); // Done
 app.use("/api/v1/review", require("./Routes/ReviewerRoute")); // Done
 app.use("/api/v1/like", require("./Routes/LikeRoute")); // Done
+app.use("/api/v1/feedback", require("./Routes/FeedbackRoute")); // Done
 
 // Ping every 5 minutes
 setInterval(() => {
