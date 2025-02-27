@@ -1,6 +1,9 @@
 const bcrypt = require("bcrypt");
 const User = require("../Model/userModel");
 const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require("google-auth-library");
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Register User
 const register = async (req, res) => {
@@ -114,6 +117,67 @@ const login = async (req, res) => {
   }
 };
 
+// Login with google
+const googleLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { sub, email, name, picture } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // If user does not exists, create a new one
+      user = await User.create({
+        name,
+        email,
+        password: email,
+        userRole: "user",
+        profilePicture: picture,
+      });
+    }
+
+    // Generate JWT Token
+    const jwtPayload = {
+      userId: user._id,
+      email: user.email,
+      userRole: user.userRole,
+    };
+
+    const secret = process.env.SECRET;
+    const accessToken = jwt.sign(jwtPayload, secret, { expiresIn: "15m" });
+    const refreshToken = jwt.sign(jwtPayload, secret, { expiresIn: "7d" });
+
+    return res
+      .status(200)
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "None",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days
+      })
+      .json({
+        success: true,
+        data: user,
+        accessToken,
+        message: "Google Login Successful",
+      });
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Google Login Failed",
+      error: error.message,
+    });
+  }
+};
+
 // Logout User
 const logout = async (req, res) => {
   try {
@@ -139,4 +203,4 @@ const logout = async (req, res) => {
   }
 };
 
-module.exports = { register, login, logout };
+module.exports = { register, login, logout, googleLogin };
