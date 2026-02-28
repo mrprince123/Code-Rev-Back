@@ -110,13 +110,31 @@ const codeSchema = mongoose.Schema(
       ref: "User",
     },
     aiResponse: {
+      type: mongoose.Schema.Types.Mixed,
+      required: false,
+      default: null,
+    },
+    aiScore: {
+      type: Number,
+      required: false,
+      default: null,
+    },
+    aiVerdict: {
       type: String,
-      required: true,
+      enum: [
+        "Production Ready",
+        "Good",
+        "Needs Improvement",
+        "Critical Issues",
+        null,
+      ],
+      required: false,
+      default: null,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Middleware to generate slug before saving

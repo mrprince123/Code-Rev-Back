@@ -7,6 +7,7 @@ const {
   getCodeById,
   getAllPublicCodes,
   getPublicCodeById,
+  reReviewCode,
 } = require("../Controller/CodeController");
 const verifyToken = require("../Middleware/sendToken");
 
@@ -19,4 +20,5 @@ router.get("/get/:slug", verifyToken, getCodeById);
 router.put("/update/:slug", verifyToken, updateCodeById);
 router.delete("/delete/:slug", verifyToken, deleteCodeById);
 router.get("/all/public", getAllPublicCodes);
+router.patch("/re-review/:slug", verifyToken, reReviewCode);
 module.exports = router;
